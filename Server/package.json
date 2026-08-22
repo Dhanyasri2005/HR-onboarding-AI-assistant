@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.18.0",
+    "@napi-rs/canvas": "^1.0.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
