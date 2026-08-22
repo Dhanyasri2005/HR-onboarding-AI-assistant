@@ -4,7 +4,7 @@ import {
 } from "react";
 
 const API_URL =
-  "http://localhost:5000";
+  "https://hr-onboarding-ai-assistant.vercel.app";
 
 function TaskList({
   onTasksLoaded

@@ -11,7 +11,7 @@ function App() {
   async function loadTasks() {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/tasks"
+        "https://hr-onboarding-ai-assistant.vercel.app/api/tasks"
       );
 
       const data = await response.json();

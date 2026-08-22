@@ -7,7 +7,7 @@ import {
 import Message from "./Message";
 
 const API_URL =
-  "http://localhost:5000";
+  "https://hr-onboarding-ai-assistant.vercel.app";
 
 function Chat({
   onTaskCreated
