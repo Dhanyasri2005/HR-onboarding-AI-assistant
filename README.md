@@ -1,154 +1,234 @@
 # HR Onboarding AI Employee
 
-## Project Purpose
+## Project Overview
 
-The purpose of this project is to build an AI-powered HR onboarding assistant that helps new employees during their onboarding process. The application allows employees to ask questions about company benefits, IT setup, policies, and other onboarding information using the provided HR documents.
+The HR Onboarding AI Employee is a conversational web application designed to help new employees complete their onboarding process.
 
-The assistant also allows employees to create onboarding tasks, view their tasks, check task status conversationally, and mark tasks as completed.
+The application allows employees to ask questions about company policies, benefits, IT setup, and onboarding procedures. The assistant provides answers based on the provided onboarding documents rather than relying on unsupported information.
 
-## Technology Stack
+The application also supports onboarding task management. Users can create tasks conversationally, check the status of existing tasks, and continue a conversation naturally using previous messages as context.
 
-In this project, I used **React and Vite** for the frontend to build an interactive and responsive chatbot interface.
+The project uses mock onboarding data and documents, so no real employee or customer information is required.
 
-I used **JavaScript, Node.js, and Express.js** for the backend to handle API requests, document processing, chatbot interactions, and task management.
+## Purpose of the Project
 
-I used the **Google Gemini API with the `@google/genai` package** to provide natural conversational responses. Gemini uses the relevant onboarding document context and current task information to respond to the user.
+The main purpose of this project is to demonstrate how an AI-powered HR onboarding assistant can combine:
 
-I used **PDF documents** as the knowledge source for the HR onboarding assistant. The application retrieves relevant information from documents such as:
+- Document-based information retrieval
+- Conversational AI
+- Multi-turn conversation handling
+- Task creation and tracking
+- PDF document processing
+- REST API development
+- A web-based chat interface
 
-- `benefits.pdf`
-- `it-policy.pdf`
-- `onboarding-faq.pdf`
+The system is designed to behave like an HR onboarding employee rather than simply acting as a document search system.
 
-For task management, I used a **JSON file (`tasks.json`)** to store onboarding tasks, including the task ID, title, status, and creation time.
+## Main Features
 
-## Key Features
+### Conversational Onboarding Assistant
 
-- AI-powered HR onboarding assistant
-- Question answering using provided onboarding documents
-- Benefits and IT policy assistance
-- PDF-based document knowledge
-- Natural multi-turn conversations
-- Understanding of conversational references such as "it", "that", and "my task"
-- Conversational onboarding task creation
-- Conversational task status checking
-- View all onboarding tasks
-- Mark tasks as completed
-- Display relevant document sources
-- Responsive and user-friendly interface
-
-## Conversational Interaction
-
-The assistant maintains conversation context so that users can naturally continue a conversation without repeating the complete question.
+Employees can ask natural-language questions about onboarding.
 
 For example:
 
-**User:**  
-What do I need to do for IT setup?
+- What benefits are available?
+- What is required for IT setup?
+- What is the onboarding process?
+- Can you explain this policy?
 
-**Assistant:**  
-You need to set up your company account, create a strong password, and enable MFA.
+The assistant uses the available onboarding documents to provide relevant answers.
 
-**User:**  
-Create a task for that.
+### Document-Grounded Answers
 
-**Assistant:**  
-Done! I've created "Complete my IT setup". It is currently Pending.
+The application contains onboarding PDF documents such as:
 
-**User:**  
-Is it completed?
+- Benefits information
+- IT policy
+- Onboarding FAQ
 
-**Assistant:**  
-Not yet. "Complete my IT setup" is currently Pending.
+The PDFs are processed by the backend and divided into smaller text chunks.
 
-This allows the user to check task status conversationally and demonstrates multi-turn interaction.
+When a user asks a question, the application searches the relevant document content and provides the matching information to the AI model.
 
-## Document-Grounded Responses
+If the required information is not available in the provided documents, the assistant is instructed not to invent an answer.
 
-The assistant uses the provided onboarding documents when answering company-related questions.
+### Conversational Task Management
 
-For example, when the user asks about IT setup, the application retrieves relevant information from `it-policy.pdf` and provides that information to the AI for generating the response.
-
-If the requested information is not available in the provided documents, the assistant avoids inventing company policies and informs the user that the information could not be found in the provided onboarding documents.
-
-## Task Management
-
-Users can create onboarding tasks through the chatbot.
+Users can create onboarding tasks through natural language.
 
 For example:
 
-> Create a task to complete my IT setup.
+> Create a task to complete the IT setup.
 
-The task is stored in `Server/data/tasks.json` with information such as:
+The application creates the task and stores information such as:
 
 - Task ID
 - Task title
-- Task status
-- Creation date
+- Current status
+- Creation time
 
-Tasks can be viewed in the **My Tasks** section and marked as completed.
+The available task statuses are:
 
-Users can also ask the assistant about the current status of their tasks conversationally.
+- Pending
+- In Progress
+- Completed
 
-## Design Tradeoff
+Users can also ask about their tasks conversationally.
 
-For this project, I chose **JSON-based task storage instead of MongoDB**.
+For example:
 
-The main reason was to keep the implementation simple and focus on the main requirements of the assessment, such as AI-based document question answering, multi-turn conversation, task creation, and conversational task status checking.
+> What is the status of my IT setup task?
 
-Using `tasks.json` avoids additional database configuration and keeps the project lightweight while still providing persistent task information.
+The system checks the current task information and returns the actual status.
 
-For a production application, I would use MongoDB because it would be more suitable for multiple employees, larger amounts of data, concurrent updates, authentication, and scalability.
+### Multi-Turn Conversation
 
-## Project Structure
+The application maintains conversation history between messages.
+
+This allows the assistant to understand references such as:
+
+- "it"
+- "that"
+- "this task"
+- "the previous one"
+- "my task"
+
+For example:
+
+> User: What benefits are available?
+
+> Assistant: The available benefits are ...
+
+> User: What about that?
+
+The previous conversation is provided to the AI model so that the assistant can understand the reference.
+
+### Task Storage
+
+For this project, onboarding tasks are stored using a JSON file rather than a production database.
+
+This keeps the implementation simple and suitable for the assessment's mock-data requirement.
+
+The task API supports:
+
+- Getting tasks
+- Creating tasks
+- Updating task status
+
+### PDF Processing
+
+The backend reads the onboarding PDF files from the server documents directory.
+
+The PDF text is cleaned, divided into chunks, and stored in memory for document searching.
+
+A simple keyword-based relevance score is used to identify relevant document chunks before sending the context to the AI model.
+
+## Technology Stack
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- CSS
+
+React and Vite are used to build a responsive conversational interface and provide a fast frontend development and build workflow.
+
+### Backend
+
+- Node.js
+- Express.js
+- REST APIs
+
+Express is used to create the backend APIs for chat, documents, tasks, and health checking.
+
+### AI
+
+- Google Gemini
+- `@google/genai`
+
+Gemini is used to generate conversational responses using:
+
+- Relevant onboarding document content
+- Current task information
+- Previous conversation history
+- The user's latest message
+
+The AI is instructed to remain grounded in the supplied information and avoid inventing company policies or task information.
+
+### Document Processing
+
+- `pdf-parse`
+
+The PDF parser is used to extract text from the onboarding documents.
+
+### Other Technologies
+
+- CORS
+- dotenv
+- JSON-based task storage
+- GitHub
+- Vercel
+
+## Architecture
+
+The application is divided into two main parts:
+
+### Client
+
+The React client provides the user interface for:
+
+- Chatting with the onboarding assistant
+- Viewing onboarding tasks
+- Creating tasks
+- Updating task status
+- Viewing conversational responses
+
+### Server
+
+The Express server provides APIs for:
+
+- `/api/chat`
+- `/api/tasks`
+- `/api/documents`
+- `/api/health`
+
+The server processes the onboarding documents, manages tasks, and communicates with Gemini.
+
+## Application Flow
+
+When a user asks an onboarding question:
+
+1. The client sends the user's message and conversation history to the server.
+2. The server checks whether the request is related to task creation or task status.
+3. If it is a task request, the task system handles it using the current task data.
+4. Otherwise, the server searches the onboarding document content.
+5. Relevant document content is selected as context.
+6. Current task information and conversation history are also prepared.
+7. The information is sent to Gemini.
+8. Gemini generates a concise conversational response.
+9. The server sends the response and relevant document sources back to the client.
+10. The client displays the response in the chat interface.
+
+## Conversational Design
+
+The assistant is designed with several conversational rules.
+
+It:
+
+- Uses the provided onboarding documents for policy-related answers.
+- Uses the current task information for task-related questions.
+- Maintains previous conversation context.
+- Understands conversational references.
+- Does not claim that a task was created unless the task system actually creates it.
+- Avoids repeatedly displaying all available policies.
+- Gives concise and conversational responses.
+- States when information cannot be found in the provided onboarding documentation.
+
+## Task Management
+
+Tasks are stored in:
 
 ```text
-hr-onboarding-ai/
-│
-├── Client/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Chat.jsx
-│   │   │   ├── TaskList.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   └── Message.jsx
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   │
-│   └── package.json
-│
-├── Server/
-│   ├── documents/
-│   │   ├── benefits.pdf
-│   │   ├── it-policy.pdf
-│   │   └── onboarding-faq.pdf
-│   │
-│   ├── data/
-│   │   └── tasks.json
-│   │
-│   ├── services/
-│   │   ├── documentService.js
-│   │   └── aiService.js
-│   │
-│   ├── routes/
-│   │   ├── chatRoutes.js
-│   │   └── taskRoutes.js
-│   │
-│   ├── server.js
-│   ├── package.json
-│   └── .env
-│
-├── README.md
-└── .gitignore
-## Future Improvements
-
-- MongoDB-based task storage
-- Employee authentication
-- Multiple employee profiles
-- Admin dashboard
-- Role-based access control
-- More HR onboarding documents
-- Scalable document retrieval using a vector database
-- Cloud deployment
+Server/data/tasks.json
