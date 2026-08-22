@@ -24,6 +24,7 @@ const PORT =
 app.use(
   cors({
     origin:
+      process.env.CLIENT_URL ||
       "http://localhost:5173"
   })
 );
@@ -84,42 +85,65 @@ app.use(
   }
 );
 
-/* START SERVER */
+/*
+  LOCAL DEVELOPMENT
+*/
 
-async function startServer() {
-  try {
-    await loadDocuments();
+if (require.main === module) {
 
-    app.listen(
-      PORT,
-      () => {
-        console.log("");
-        console.log(
-          "======================================"
-        );
-        console.log(
-          "      HR ONBOARDING AI EMPLOYEE"
-        );
-        console.log(
-          "======================================"
-        );
-        console.log(
-          `Server: http://localhost:${PORT}`
-        );
-        console.log(
-          `Health: http://localhost:${PORT}/api/health`
-        );
-        console.log("");
-      }
-    );
-  } catch (error) {
-    console.error(
-      "Server startup failed:",
-      error
-    );
+  async function startServer() {
 
-    process.exit(1);
+    try {
+
+      await loadDocuments();
+
+      app.listen(
+        PORT,
+        () => {
+
+          console.log("");
+
+          console.log(
+            "======================================"
+          );
+
+          console.log(
+            "      HR ONBOARDING AI EMPLOYEE"
+          );
+
+          console.log(
+            "======================================"
+          );
+
+          console.log(
+            `Server: http://localhost:${PORT}`
+          );
+
+          console.log(
+            `Health: http://localhost:${PORT}/api/health`
+          );
+
+          console.log("");
+
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Server startup failed:",
+        error
+      );
+
+      process.exit(1);
+    }
   }
+
+  startServer();
 }
 
-startServer();
+/*
+  Export Express app for Vercel
+*/
+
+module.exports = app;
