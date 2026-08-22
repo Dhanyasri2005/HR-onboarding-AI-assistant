@@ -23,9 +23,7 @@ const PORT =
 
 app.use(
   cors({
-    origin:
-      process.env.CLIENT_URL ||
-      "http://localhost:5173"
+    origin: true
   })
 );
 
@@ -74,7 +72,8 @@ app.use(
 
       res.status(500).json({
         success: false,
-        message: "Failed to load onboarding documents."
+        message:
+          "Failed to load onboarding documents."
       });
     }
   }
