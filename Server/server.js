@@ -35,6 +35,51 @@ app.use(
   })
 );
 
+/* DOCUMENT INITIALIZATION */
+
+let documentsLoaded = false;
+let loadingDocuments = null;
+
+async function ensureDocumentsLoaded() {
+  if (documentsLoaded) {
+    return;
+  }
+
+  if (!loadingDocuments) {
+    loadingDocuments = loadDocuments()
+      .then(() => {
+        documentsLoaded = true;
+      })
+      .catch((error) => {
+        loadingDocuments = null;
+        throw error;
+      });
+  }
+
+  await loadingDocuments;
+}
+
+/* LOAD DOCUMENTS BEFORE REQUESTS */
+
+app.use(
+  async (req, res, next) => {
+    try {
+      await ensureDocumentsLoaded();
+      next();
+    } catch (error) {
+      console.error(
+        "Document loading failed:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to load onboarding documents."
+      });
+    }
+  }
+);
+
 /* HEALTH CHECK */
 
 app.get(
@@ -89,55 +134,36 @@ app.use(
 
 if (require.main === module) {
 
-  async function startServer() {
+  app.listen(
+    PORT,
+    () => {
 
-    try {
+      console.log("");
 
-      await loadDocuments();
-
-      app.listen(
-        PORT,
-        () => {
-
-          console.log("");
-
-          console.log(
-            "======================================"
-          );
-
-          console.log(
-            "      HR ONBOARDING AI EMPLOYEE"
-          );
-
-          console.log(
-            "======================================"
-          );
-
-          console.log(
-            `Server: http://localhost:${PORT}`
-          );
-
-          console.log(
-            `Health: http://localhost:${PORT}/api/health`
-          );
-
-          console.log("");
-
-        }
+      console.log(
+        "======================================"
       );
 
-    } catch (error) {
-
-      console.error(
-        "Server startup failed:",
-        error
+      console.log(
+        "      HR ONBOARDING AI EMPLOYEE"
       );
 
-      process.exit(1);
+      console.log(
+        "======================================"
+      );
+
+      console.log(
+        `Server: http://localhost:${PORT}`
+      );
+
+      console.log(
+        `Health: http://localhost:${PORT}/api/health`
+      );
+
+      console.log("");
+
     }
-  }
-
-  startServer();
+  );
 }
 
 /* VERCEL */
