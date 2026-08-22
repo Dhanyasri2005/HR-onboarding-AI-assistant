@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { PDFParse } = require("pdf-parse");
+const pdf = require("pdf-parse");
 
 const DOCUMENTS_DIR = path.join(
   __dirname,
@@ -121,16 +121,11 @@ async function loadDocuments() {
         filePath
       );
 
-      const parser = new PDFParse({
-        data: buffer
-      });
-
-      const result = await parser.getText();
-
-      await parser.destroy();
+      // pdf-parse@1.1.1 API
+      const result = await pdf(buffer);
 
       const text = cleanText(
-        result.text
+        result.text || ""
       );
 
       const chunks = createChunks(text);
