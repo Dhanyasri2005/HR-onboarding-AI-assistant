@@ -85,9 +85,7 @@ app.use(
   }
 );
 
-/*
-  LOCAL DEVELOPMENT
-*/
+/* LOCAL DEVELOPMENT */
 
 if (require.main === module) {
 
@@ -142,8 +140,6 @@ if (require.main === module) {
   startServer();
 }
 
-/*
-  Export Express app for Vercel
-*/
+/* VERCEL */
 
 module.exports = app;
