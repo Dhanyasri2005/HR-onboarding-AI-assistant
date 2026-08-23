@@ -8,24 +8,30 @@ const {
   getSources
 } = require("./services/documentService");
 
-const chatRoutes =
-  require("./routes/chatRoutes");
-
-const taskRoutes =
-  require("./routes/taskRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
 
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
-/* MIDDLEWARE */
+
+/* ======================================
+   CORS
+====================================== */
 
 app.use(
   cors({
-    origin: true
+    origin: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
+
+/* ======================================
+   BODY PARSER
+====================================== */
 
 app.use(
   express.json({
@@ -33,23 +39,57 @@ app.use(
   })
 );
 
-/* DOCUMENT INITIALIZATION */
+
+/* ======================================
+   HEALTH CHECK
+   Keep BEFORE document loading
+====================================== */
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "HR Onboarding AI server is running."
+  });
+});
+
+
+/* ======================================
+   DOCUMENT INITIALIZATION
+====================================== */
 
 let documentsLoaded = false;
 let loadingDocuments = null;
 
 async function ensureDocumentsLoaded() {
+
+  // Documents already loaded
   if (documentsLoaded) {
     return;
   }
 
+  // If another request is already loading documents,
+  // wait for the same promise.
   if (!loadingDocuments) {
+
     loadingDocuments = loadDocuments()
       .then(() => {
+
         documentsLoaded = true;
+
+        console.log(
+          "Onboarding documents loaded successfully."
+        );
+
       })
       .catch((error) => {
+
         loadingDocuments = null;
+
+        console.error(
+          "Error loading onboarding documents:",
+          error
+        );
+
         throw error;
       });
   }
@@ -57,114 +97,160 @@ async function ensureDocumentsLoaded() {
   await loadingDocuments;
 }
 
-/* LOAD DOCUMENTS BEFORE REQUESTS */
 
-app.use(
-  async (req, res, next) => {
-    try {
-      await ensureDocumentsLoaded();
-      next();
-    } catch (error) {
-      console.error(
-        "Document loading failed:",
-        error
-      );
+/* ======================================
+   DOCUMENT LOADING MIDDLEWARE
+====================================== */
 
-      res.status(500).json({
-        success: false,
-        message:
-          "Failed to load onboarding documents."
-      });
-    }
-  }
-);
+app.use(async (req, res, next) => {
 
-/* HEALTH CHECK */
+  try {
 
-app.get(
-  "/api/health",
-  (req, res) => {
-    res.json({
-      success: true,
-      message:
-        "HR Onboarding AI server is running."
+    await ensureDocumentsLoaded();
+
+    next();
+
+  } catch (error) {
+
+    console.error(
+      "Document loading failed:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load onboarding documents.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined
     });
   }
-);
+});
 
-/* DOCUMENTS */
 
-app.get(
-  "/api/documents",
-  (req, res) => {
-    res.json({
-      success: true,
-      documents:
-        getSources()
-    });
-  }
-);
+/* ======================================
+   DOCUMENTS API
+====================================== */
 
-/* ROUTES */
+app.get("/api/documents", (req, res) => {
+
+  return res.status(200).json({
+    success: true,
+    documents: getSources()
+  });
+
+});
+
+
+/* ======================================
+   CHAT API
+====================================== */
 
 app.use(
   "/api/chat",
   chatRoutes
 );
 
+
+/* ======================================
+   TASK API
+====================================== */
+
 app.use(
   "/api/tasks",
   taskRoutes
 );
 
-/* 404 */
 
-app.use(
-  (req, res) => {
-    res.status(404).json({
-      success: false,
-      message:
-        "API route not found."
-    });
-  }
-);
+/* ======================================
+   404 HANDLER
+====================================== */
 
-/* LOCAL DEVELOPMENT */
+app.use((req, res) => {
+
+  return res.status(404).json({
+    success: false,
+    message: "API route not found."
+  });
+
+});
+
+
+/* ======================================
+   GLOBAL ERROR HANDLER
+====================================== */
+
+app.use((error, req, res, next) => {
+
+  console.error(
+    "Server error:",
+    error
+  );
+
+  return res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+    error:
+      process.env.NODE_ENV === "development"
+        ? error.message
+        : undefined
+  });
+
+});
+
+
+/* ======================================
+   START SERVER
+====================================== */
 
 if (require.main === module) {
 
-  app.listen(
-    PORT,
-    () => {
+  app.listen(PORT, () => {
 
-      console.log("");
+    console.log("");
 
-      console.log(
-        "======================================"
-      );
+    console.log(
+      "======================================"
+    );
 
-      console.log(
-        "      HR ONBOARDING AI EMPLOYEE"
-      );
+    console.log(
+      "       HR ONBOARDING AI EMPLOYEE"
+    );
 
-      console.log(
-        "======================================"
-      );
+    console.log(
+      "======================================"
+    );
 
-      console.log(
-        `Server: http://localhost:${PORT}`
-      );
+    console.log(
+      `Server: http://localhost:${PORT}`
+    );
 
-      console.log(
-        `Health: http://localhost:${PORT}/api/health`
-      );
+    console.log(
+      `Health: http://localhost:${PORT}/api/health`
+    );
 
-      console.log("");
+    console.log(
+      `Chat: http://localhost:${PORT}/api/chat`
+    );
 
-    }
-  );
+    console.log(
+      `Tasks: http://localhost:${PORT}/api/tasks`
+    );
+
+    console.log(
+      "======================================"
+    );
+
+    console.log("");
+
+  });
+
 }
 
-/* VERCEL */
+
+/* ======================================
+   EXPORT FOR VERCEL / TESTING
+====================================== */
 
 module.exports = app;
